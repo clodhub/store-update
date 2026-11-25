@@ -1,36 +1,53 @@
 # Store update component
 
 ## Purpose and facilities
-Package `ourapps-ae/store-update`. `updates` derives store endpoints from injected invitations, fetches update descriptions and compares application version numbers on browser, Apple and Android clients.
+Tells people when a newer version of the application they are using has been published, so they are not left on an old one. An application listed on the ourapps.app store gets an invitation link, such as `https://ourapps.app/l/0123456789abcdef01234567`. From that link this component works out the store address that describes the newest release, asks the store for it, and compares the version the store reports with the version installed on the device. When the store has a newer one, the application gets the version number and the address to install it from, and decides itself how to tell the person (a banner, a button, a message at start).
+
+It works on the web, on Apple devices and on Android. It never installs anything, keeps no data and needs no account: if the store cannot be reached or answers with something unexpected, the answer is simply "no update".
+
+Facilities: `updates` (Tells people when a newer version of the application they use has been published on the ourapps.app store).
 
 ## User inputs
-Settings: `enabled` (boolean; default true) and `inviteAddress` (address; optional; the store invitation link, for example `https://ourapps.app/l/0123456789abcdef01234567`). The recipe also passes the installed version and a fetch function. No credentials, private links or fixed application addresses are bundled.
+The installer collects two settings:
+
+- `enabled`: whether the application looks for updates at all, true or false (default true). False switches the check off everywhere.
+- `inviteAddress`: the application's ourapps.app invitation link, an http or https address (optional, no default), `https://<store>/l/<identifier>` with nothing after the identifier. Without it, or with any other form of address, there is no update check. Anything after a `?` or `#` in the link is ignored.
+
+The application also passes, in code, the version installed on the device and the function that makes web requests. No keys or private links are needed.
 
 ## Artefacts and dependencies
-`component.json` maps every `implementation/` source into `components/store-update/`. Node 26.5 and Python 3.12 use standard libraries only. Native consumer checks use Swift 6.4 or Kotlin 2.2 and Java 26.0. `tools.lock.json` pins verification tools. Licence wording remains deferred.
+`component.json` maps every `implementation/` source into `components/store-update/`: `server/store.ts` (the store address from the invitation link and the settings), `web/update.ts` (the request and the comparison), `apple/Sources/Version.swift` and the Android `ae.update` sources. No runtime dependencies. `tools.lock.json` pins the check tools (Node 26.5, Python 3.12, Swift 6.4, Kotlin 2.2, Java 26.0).
 
 ## Provided interfaces
-`interfaces/updates.json` defines `updates` (ae/updates) version 1.0.0 as an OpenRPC 1.3.2 document: one method per function (`updateUrlFor`, `updateAddress`, `isNewer`, `fetchUpdate`, `currentVersion`), tagged with the languages that provide it, with parameters and results as JSON Schema 2020-12. `server/store.ts` exports `updateUrlFor`. It accepts http and https addresses with exactly `/l/<one nonempty opaque segment>` (the invitation address), keeping the complete identifier including hyphens and underscores. Additional paths, encoded separators, credentials and malformed addresses return null; query and fragment suffixes are omitted from the derived address. `updateAddress(settings)` applies the two collected settings. `web/update.ts` exports `isNewer` and `fetchUpdate`. Native files provide `isNewer(_:than:)` and `ae.update.isNewer`. Numeric components compare with absent components zero-padded, suffixes discarded and malformed numeric components treated as zero. Current versions starting with `0.0.0` never update. This application-version comparator is distinct from the installer's exact package-version validation. Empty or separator-only version strings are outside the native input contract; Apple uses the reference split behaviour. Swift provides `currentVersion` from the application bundle.
+`interfaces/updates.json` defines `updates` (`ae/updates`) version 1.0.0 as an OpenRPC 1.3.2 document: `updateUrlFor`, `updateAddress`, `isNewer`, `fetchUpdate` and `currentVersion`, each tagged with the languages that provide it, with parameters and results as JSON Schema 2020-12.
+
+How versions compare: the numbers are compared one by one, so `0.6.10` is newer than `0.6.9`; a missing number counts as 0 (`1.2` equals `1.2.0`); anything after a hyphen is ignored (`1.2.0-beta` equals `1.2.0`); a part that is not a number counts as 0. An installed version starting `0.0.0` (a development build) never reports an update.
 
 ## Required interfaces
-The recipe supplies route wiring and update prompts. Fetch accepts an injected standard fetch function and returns only string `version` and `url` fields. Network failures, unsuccessful status, invalid data and invalid response shapes return null. Request completion, cancellation and retry policy remain with the injected fetch implementation; this helper adds no retries or timeout.
+None from other components. The application supplies the installed version, the request function (it decides on time limits and retries; this component adds none), and what to show when an update exists.
 
 ## Integration
-See `INSTRUCTIONS.md` for selection and configuration and `suitability.json` for the library-only profile. `examples/consumer.ts` combines endpoint derivation, fetching and comparison without a game checkout. Include native source roots and import `ae.update.isNewer` on Android. Server routes call `updateUrlFor` and relay the response; callers decide whether to display or open an update link.
+On the server, `updateAddress(settings)` turns the two settings into the store address, or null when updates are off or the link is missing or malformed; a server route can relay the store's answer to clients. On the web:
+
+```ts
+import { fetchUpdate, isNewer } from "./components/store-update/web/index";
+const latest = address ? await fetchUpdate(address, fetch) : null;
+if (latest && isNewer(latest.version, installedVersion)) showUpdate(latest.version, latest.url);
+```
+
+On Apple, `currentVersion` reads the installed version from the application bundle and `isNewer(_:than:)` compares; on Android, import `ae.update.isNewer`. `examples/consumer.ts` combines the address, the request and the comparison.
 
 ## Visual definition and connected examples
-`visual/definition.json` maps its `updates` output to the provided interface. `visual/examples/connected.json` connects it to an illustrative application consumer. Both image formats and text descriptions are in `visual/output/`.
+`visual/definition.json` maps its `updates` output to the provided interface. `visual/examples/connected.json` connects it to an illustrative application consumer. Both image formats and the text description are in `visual/output/`.
 
 ## Infrastructure
-No service is deployed by this package. Runtime network access is through the caller's injected fetch implementation and configured address. Local tests use in-memory responses and no accounts. Provider interoperability and costs are unmeasured.
+No service and no account. The only network use is the request to the store, made through the application's own request function, to the address the invitation link gives.
 
 ## Verification
-
-Execution prerequisites are empty for these local library checks. Coverage is described here and in facilities; installed compilers are checked through the manifest's tools declaration. The invitation fixtures cover complete opaque identifiers, a synthetic 24-hex identifier, both address schemes, query/fragment removal and invalid-path rejection.
-`node --test tests/web.test.ts` checks reference comparison fixtures, address derivation, offline and invalid responses and the independent consumer. `python3 tests/native.py apple` and `python3 tests/native.py android` compile native consumers. Device integration and live store operation require application-level verification.
+`node --test tests/web.test.ts` (required) checks the version comparison against a table of cases, the store address from invitation links, that an unreachable store, an error status or a malformed answer give no update, that the settings give the right address or none, and a small consumer that fetches and compares. `node --test tests/regression.test.ts` (required) checks that only exact invitation links are accepted: extra path parts, encoded slashes, user names and passwords, and malformed addresses all give no address. `python3 tests/native.py apple` compiles the Swift comparison and checks it against the same table; `python3 tests/native.py android` compiles the Kotlin comparison and checks a few of the same cases.
 
 ## Scenarios and presentation
-`0.6.10` follows `0.6.9`; suffix-only differences do not trigger updates. An offline store gives no update. The connected diagram shows update functions supplying application-owned prompts.
+A family uses version 1.4.2 of a game installed from ourapps.app. The developer publishes 1.5.0. Next time the game starts, it asks the store, sees 1.5.0, and shows "A new version is ready" with a link to install it. On a train with no signal the request fails and nothing is shown. A developer running a local build (version `0.0.0-dev`) is never told to update.
 
 ## Updates and removal
-Patch updates replace files. The settings are `enabled` and `inviteAddress`. No version is published. Removal deletes owned sources and application imports; no application data is deleted.
+Updates replace the component's files; it stores nothing. Removing it removes the update check; nothing on the device or the store is deleted.
