@@ -1,6 +1,6 @@
 # Store updates instructions
 
-Package `ourapps-ae/store-update` version `0.11.0`. It provides the `updates` interface (type `ae/updates`, version 1.0.0) and requires nothing.
+Package `clodhub/store-update` version `0.12.0`. It provides the `updates` interface (type `ae/updates`, version 1.0.0) and requires nothing.
 
 ## For the agent
 
@@ -26,6 +26,6 @@ From the component directory:
 - `node --test tests/regression.test.ts` (required; invitation path regression)
 - `python3 tests/native.py apple` (needs swiftc 6.4)
 - `python3 tests/native.py android` (needs kotlinc 2.2 and java 26.0; not runnable where kotlinc is missing)
-- `python3 -m aepm review <digest> --store STORE --policy POLICY --trusted --allow-network` checks an archive fetched with `python3 -m aepm fetch ourapps-ae/store-update@VERSION --store STORE --from https://ourapps.app` and runs its suites.
+- `python3 -m aepm review <digest> --store STORE --policy POLICY --trusted --allow-network` checks an archive fetched with `python3 -m aepm fetch clodhub/store-update@VERSION --store STORE --from https://clodhub.com` and runs its suites.
 
 In the application, serve a store document with a higher version and confirm the prompt appears; serve a lower or equal version, an error status or invalid JSON and confirm no prompt appears.

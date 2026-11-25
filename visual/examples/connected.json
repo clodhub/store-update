@@ -7,12 +7,12 @@
   "focus": "component",
   "definitions": [
     {
-      "id": "ourapps-ae.store-update",
+      "id": "clodhub.store-update",
       "name": "Store updates",
       "kind": "component",
       "status": "example",
-      "package": "ourapps-ae/store-update",
-      "version": "0.11.0",
+      "package": "clodhub/store-update",
+      "version": "0.12.0",
       "ports": [
         {
           "id": "updates",
@@ -66,7 +66,7 @@
     {
       "id": "component",
       "name": "Store updates",
-      "definition": "ourapps-ae.store-update",
+      "definition": "clodhub.store-update",
       "configuration": {}
     },
     {
