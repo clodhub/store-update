@@ -1,17 +1,17 @@
 {
-  "id": "clodhub.store-update",
+  "id": "com.clodhub.store-update",
   "name": "Store updates",
   "kind": "component",
   "status": "example",
-  "package": "clodhub/store-update",
-  "version": "0.12.0",
+  "package": "pkg:clod/com.clodhub/store-update",
+  "version": "0.13.0",
   "ports": [
     {
       "id": "updates",
       "name": "Store updates",
       "direction": "output",
       "kind": "interface",
-      "type": "ae/updates",
+      "type": "com.clodhub/updates",
       "version": "1.0.0"
     }
   ],

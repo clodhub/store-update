@@ -1,9 +1,9 @@
 {
   "openrpc": "1.3.2",
   "info": {
-    "title": "ae/updates",
+    "title": "com.clodhub/updates",
     "version": "1.0.0",
-    "description": "Store update checks for browser, Apple and Android clients. Methods tagged typescript are exported functions of server/store.ts and web/update.ts; swift and kotlin name the native functions isNewer(_:than:) in apple/Sources/Version.swift and ae.update.isNewer in Kotlin, which compare the same way. Version comparison: numeric components compare with absent components as zero, suffixes after - are discarded, malformed components count as zero, and a current version starting with 0.0.0 never updates. Empty or separator-only version strings are outside the native input contract.",
+    "description": "Store update checks for browser, Apple and Android clients. Methods tagged typescript are exported functions of server/store.ts and web/update.ts; swift and kotlin name the native functions isNewer(_:than:) in apple/Sources/Version.swift and com.clodhub.update.isNewer in Kotlin, which compare the same way. Version comparison: numeric components compare with absent components as zero, suffixes after - are discarded, malformed components count as zero, and a current version starting with 0.0.0 never updates. Empty or separator-only version strings are outside the native input contract.",
     "license": {
       "name": "Apache-2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"

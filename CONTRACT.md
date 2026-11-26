@@ -10,16 +10,16 @@ Facilities: `updates` (Tells people when a newer version of the application they
 ## User inputs
 The installer collects two settings:
 
-- `enabled`: whether the application looks for updates at all, true or false (default true). False switches the check off everywhere.
+- `enabled`: whether the application looks for updates at all, true or false (default true); `false` switches the check off everywhere.
 - `inviteAddress`: the application's ourapps.app invitation link, an http or https address (optional, no default), `https://<store>/l/<identifier>` with nothing after the identifier. Without it, or with any other form of address, there is no update check. Anything after a `?` or `#` in the link is ignored.
 
 The application also passes, in code, the version installed on the device and the function that makes web requests. No keys or private links are needed.
 
 ## Artefacts and dependencies
-`component.json` maps every `implementation/` source into `components/store-update/`: `server/store.ts` (the store address from the invitation link and the settings), `web/update.ts` (the request and the comparison), `apple/Sources/Version.swift` and the Android `ae.update` sources. No runtime dependencies. `tools.lock.json` pins the check tools (Node 26.5, Python 3.12, Swift 6.4, Kotlin 2.2, Java 26.0).
+`component.json` maps every `implementation/` source into `components/store-update/`: `server/store.ts` (the store address from the invitation link and the settings), `web/update.ts` (the request and the comparison), `apple/Sources/Version.swift` and the Android `com.clodhub.update` sources. No runtime dependencies. `tools.lock.json` pins the check tools (Node 26.5, Python 3.12, Swift 6.4, Kotlin 2.2, Java 26.0).
 
 ## Provided interfaces
-`interfaces/updates.json` defines `updates` (`ae/updates`) version 1.0.0 as an OpenRPC 1.3.2 document: `updateUrlFor`, `updateAddress`, `isNewer`, `fetchUpdate` and `currentVersion`, each tagged with the languages that provide it, with parameters and results as JSON Schema 2020-12.
+`interfaces/updates.json` defines `updates` (`com.clodhub/updates`) version 1.0.0 as an OpenRPC 1.3.2 document: `updateUrlFor`, `updateAddress`, `isNewer`, `fetchUpdate` and `currentVersion`, each tagged with the languages that provide it, with parameters and results as JSON Schema 2020-12.
 
 How versions compare: the numbers are compared one by one, so `0.6.10` is newer than `0.6.9`; a missing number counts as 0 (`1.2` equals `1.2.0`); anything after a hyphen is ignored (`1.2.0-beta` equals `1.2.0`); a part that is not a number counts as 0. An installed version starting `0.0.0` (a development build) never reports an update.
 
@@ -35,7 +35,7 @@ const latest = address ? await fetchUpdate(address, fetch) : null;
 if (latest && isNewer(latest.version, installedVersion)) showUpdate(latest.version, latest.url);
 ```
 
-On Apple, `currentVersion` reads the installed version from the application bundle and `isNewer(_:than:)` compares; on Android, import `ae.update.isNewer`. `examples/consumer.ts` combines the address, the request and the comparison.
+On Apple, `currentVersion` reads the installed version from the application bundle and `isNewer(_:than:)` compares; on Android, import `com.clodhub.update.isNewer`. `examples/consumer.ts` combines the address, the request and the comparison.
 
 ## Visual definition and connected examples
 `visual/definition.json` maps its `updates` output to the provided interface. `visual/examples/connected.json` connects it to an illustrative application consumer. Both image formats and the text description are in `visual/output/`.

@@ -1,4 +1,4 @@
-import ae.update.isNewer
+import com.clodhub.update.isNewer
 
 fun main() {
     check(isNewer("0.6.10", "0.6.9"))

@@ -1,4 +1,4 @@
-package ae.update
+package com.clodhub.update
 
 fun isNewer(latest: String, current: String): Boolean {
     if (current.startsWith("0.0.0")) return false
